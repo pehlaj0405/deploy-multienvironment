@@ -43,6 +43,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+         terraform-version: 1.7.6
+
       - name: Set environment to UAT
         run: echo "env=uat" >> $GITHUB_OUTPUT
         id: set-env
@@ -63,6 +68,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+         terraform-version: 1.7.6
 
       - name: Set environment to PROD
         run: echo "env=prod" >> $GITHUB_OUTPUT
