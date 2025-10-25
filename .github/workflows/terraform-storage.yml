@@ -21,7 +21,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.7.6
+          terraform_version: 1.6.0
 
       - name: Terraform Init, Plan, Apply for UAT
         run: |
@@ -47,7 +47,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.7.6
+          terraform_version: 1.6.0
 
       - name: Terraform Init, Plan, Apply for PROD
         run: |
