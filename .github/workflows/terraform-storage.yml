@@ -24,9 +24,9 @@ jobs:
           terraform_version: 1.6.0
 
       - name: Terraform Init, Plan, Apply for UAT
-        run: |
+        run: | 
           terraform init -input=false
-          terraform plan -input=false -out=tfplan
+          terraform plan -input=false -out=tfplan -var "env_prefix=uat"
           terraform apply -input=false tfplan
 
   terraform-prod:
@@ -52,5 +52,5 @@ jobs:
       - name: Terraform Init, Plan, Apply for PROD
         run: |
           terraform init -input=false
-          terraform plan -input=false -out=tfplan
+          terraform plan -input=false -out=tfplan -var "env_prefix=prod"
           terraform apply -input=false tfplan
