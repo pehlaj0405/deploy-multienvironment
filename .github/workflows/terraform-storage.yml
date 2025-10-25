@@ -37,12 +37,10 @@ jobs:
       - name: Select Environment File
         id: env
         run: |
-          if [[ "${GITHUB_REF_NAME}" == "dev" ]]; then
-            echo "tfvars=environments/dev.tfvars" >> $GITHUB_OUTPUT
-          elif [[ "${GITHUB_REF_NAME}" == "staging" ]]; then
-            echo "tfvars=environments/staging.tfvars" >> $GITHUB_OUTPUT
-          elif [[ "${GITHUB_REF_NAME}" == "main" ]]; then
-            echo "tfvars=environments/prod.tfvars" >> $GITHUB_OUTPUT
+          if [[ "${GITHUB_REF_NAME}" == "UAT" ]]; then
+            echo "tfvars=environments/UAT.tfvars" >> $GITHUB_OUTPUT
+          elif [[ "${GITHUB_REF_NAME}" == "PROD" ]]; then
+            echo "tfvars=environments/PROD.tfvars" >> $GITHUB_OUTPUT
           else
             echo "Unknown branch: ${GITHUB_REF_NAME}"
             exit 1
