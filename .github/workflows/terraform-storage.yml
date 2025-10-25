@@ -25,7 +25,7 @@ jobs:
 
       - name: Terraform Init, Plan, Apply for UAT
         run: | 
-          terraform init -input=false
+          terraform init -input=false \
            -backend-config="resource_group_name=myproject" \
             -backend-config="storage_account_name=tfbg" \
             -backend-config="container_name=tfcontainer" \
@@ -55,7 +55,7 @@ jobs:
 
       - name: Terraform Init, Plan, Apply for PROD
         run: |
-          terraform init -input=false
+          terraform init -input=false \
             -backend-config="resource_group_name=myproject" \
             -backend-config="storage_account_name=tfbg" \
             -backend-config="container_name=tfcontainer" \
