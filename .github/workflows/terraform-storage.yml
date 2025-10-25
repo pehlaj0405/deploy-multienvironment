@@ -1,0 +1,58 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - UAT
+      - PROD
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    # 👇 Map branch → GitHub Environment
+    environment:
+      name: ${{ github.ref_name }}  # dev, staging, or main
+      # GitHub handles approval automatically if configured in settings
+
+    env:
+      # Each environment can have its own secrets in GitHub
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Select Environment File
+        id: env
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "dev" ]]; then
+            echo "tfvars=environments/dev.tfvars" >> $GITHUB_OUTPUT
+          elif [[ "${GITHUB_REF_NAME}" == "staging" ]]; then
+            echo "tfvars=environments/staging.tfvars" >> $GITHUB_OUTPUT
+          elif [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+            echo "tfvars=environments/prod.tfvars" >> $GITHUB_OUTPUT
+          else
+            echo "Unknown branch: ${GITHUB_REF_NAME}"
+            exit 1
+          fi
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=${{ steps.env.outputs.tfvars }}
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var-file=${{ steps.env.outputs.tfvars }}
