@@ -3,42 +3,17 @@ name: Terraform CI/CD
 on:
   push:
     branches:
-      - staging
-      - main
+      - '**'  # Trigger on all branches
 
 jobs:
-  terraform:
+  terraform-uat:
+    name: Terraform Deploy to UAT
     runs-on: ubuntu-latest
-
-    # 👇 Map branch → GitHub Environment
-    environment:
-      name: ${{ github.ref_name }}  # dev, staging, or main
-      # GitHub handles approval automatically if configured in settings
-
     env:
-      # Each environment can have its own secrets in GitHub
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set environment to UAT
-        run: echo "env=uat" >> $GITHUB_OUTPUT
-        id: set-env
-
-      - name: Deploy to UAT
-        run: |
-          echo "Deploying branch '${GITHUB_REF_NAME}' to UAT"
-          # Add your UAT deployment commands here
-          # e.g., terraform init, plan, apply for UAT
-
-  deploy-uat:
-    name: Deploy to UAT
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -46,25 +21,25 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-         terraform-version: 1.7.6
+          terraform_version: 1.7.6
 
-      - name: Set environment to UAT
-        run: echo "env=uat" >> $GITHUB_OUTPUT
-        id: set-env
-
-      - name: Deploy to UAT
+      - name: Terraform Init, Plan, Apply for UAT
         run: |
-          echo "Deploying branch '${GITHUB_REF_NAME}' to UAT"
           terraform init -input=false
           terraform plan -input=false -out=tfplan
           terraform apply -input=false tfplan
 
-  deploy-prod:
-    name: Deploy to PROD
+  terraform-prod:
+    name: Terraform Deploy to PROD
     runs-on: ubuntu-latest
-    needs: deploy-uat  # Wait for UAT deployment to complete
+    needs: terraform-uat  # Wait for UAT deployment
     environment:
-      name: prod  # Manual approval handled via GitHub environment
+      name: prod  # Enable manual approval in GitHub settings
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -72,15 +47,10 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-         terraform-version: 1.7.6
+          terraform_version: 1.7.6
 
-      - name: Set environment to PROD
-        run: echo "env=prod" >> $GITHUB_OUTPUT
-        id: set-env
-
-      - name: Deploy to PROD
+      - name: Terraform Init, Plan, Apply for PROD
         run: |
-          echo "Deploying branch '${GITHUB_REF_NAME}' to PROD"
           terraform init -input=false
           terraform plan -input=false -out=tfplan
           terraform apply -input=false tfplan
